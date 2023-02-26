@@ -50,10 +50,7 @@ const struct xdg_surface_listener xdg_surface_listener = {
 static void
 xdg_toplevel_handle_close(void *data, struct xdg_toplevel *xdg_toplevel)
 {
-	Wlwin *wl;
-	wl = data;
-	wl->runing = 0;
-	exits(nil);
+	wlclose(data);
 }
 
 static void
@@ -65,6 +62,16 @@ xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *xdg_toplevel, int
 	if(width == 0 || height == 0 || (width == wl->dx && height == wl->dy))
 		return;
 	wlresize(wl, width, height);
+
+	wl->maximized = 0;
+	enum xdg_toplevel_state *state;
+	wl_array_for_each(state, states) {
+		switch (*state) {
+		case XDG_TOPLEVEL_STATE_MAXIMIZED:
+			wl->maximized = 1;
+			break;
+		}
+	}
 }
 
 const struct xdg_toplevel_listener xdg_toplevel_listener = {
@@ -365,6 +372,32 @@ enum{
 	P9Mouse3 = 4,
 };
 
+static int
+csd_handle_mouse(Wlwin *wl, uint32_t serial)
+{
+	if (ptinrect(wl->mouse.xy, wl->csd_close_rect)) {
+		wlclose(wl);
+		return 1;
+	}
+
+	if (ptinrect(wl->mouse.xy, wl->csd_maximize_rect)) {
+		wltogglemaximize(wl);
+		return 1;
+	}
+
+	if (ptinrect(wl->mouse.xy, wl->csd_minimize_rect)) {
+		wlminimize(wl);
+		return 1;
+	}
+
+	if (ptinrect(wl->mouse.xy, wl->csd_bar_rect)) {
+		wlmove(wl, serial);
+		return 1;
+	}
+
+	return 0;
+}
+
 static void
 pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
 {
@@ -385,7 +418,8 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial, u
 		wl->mouse.buttons &= ~m;
 
 	wl->mouse.msec = time;
-	absmousetrack(wl->mouse.xy.x, wl->mouse.xy.y, wl->mouse.buttons, wl->mouse.msec);
+	if (wl->client_side_deco && !csd_handle_mouse(wl, serial))
+		absmousetrack(wl->mouse.xy.x, wl->mouse.xy.y, wl->mouse.buttons, wl->mouse.msec);
 }
 
 static void
@@ -614,7 +648,6 @@ zxdg_toplevel_decoration_v1_handle_configure(void *data, struct zxdg_toplevel_de
 {
 	Wlwin *wl = data;
 	wl->client_side_deco = mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
-	printf("%i\n", mode);
 }
 
 static const struct zxdg_toplevel_decoration_v1_listener zxdg_toplevel_decoration_v1_listener = {
@@ -719,13 +752,15 @@ wlsetcb(Wlwin *wl)
 	wlallocbuffer(wl);
 	wl->surface = wl_compositor_create_surface(wl->compositor);
 
-	xdg_surface = xdg_wm_base_get_xdg_surface(wl->xdg_wm_base, wl->surface);
-	wl->xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
+	wl->client_side_deco = wl->decoman == nil;
 	if(wl->decoman != nil){
 		deco = zxdg_decoration_manager_v1_get_toplevel_decoration(wl->decoman, wl->xdg_toplevel);
 		zxdg_toplevel_decoration_v1_add_listener(wl->decoman, &zxdg_toplevel_decoration_v1_listener, wl);
 		zxdg_toplevel_decoration_v1_set_mode(deco, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
 	}
+
+	xdg_surface = xdg_wm_base_get_xdg_surface(wl->xdg_wm_base, wl->surface);
+	wl->xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
 	xdg_surface_add_listener(xdg_surface, &xdg_surface_listener, wl);
 	xdg_toplevel_add_listener(wl->xdg_toplevel, &xdg_toplevel_listener, wl);
 

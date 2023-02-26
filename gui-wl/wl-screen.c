@@ -41,7 +41,36 @@ newwlwin(void)
 	wl->dy = 1024;
 	wl->monx = wl->dx;
 	wl->mony = wl->dy;
+	wl->csd_bar_rect = Rect(0, 0, wl->dx, 20);
 	return wl;
+}
+
+void
+wlclose(Wlwin *wl)
+{
+	wl->runing = 0;
+	exits(nil);
+}
+
+void
+wltogglemaximize(Wlwin *wl)
+{
+	if (wl->maximized)
+		xdg_toplevel_unset_maximized(wl->xdg_toplevel);
+	else
+		xdg_toplevel_set_maximized(wl->xdg_toplevel);
+}
+
+void
+wlminimize(Wlwin *wl)
+{
+	xdg_toplevel_set_minimized(wl->xdg_toplevel);
+}
+
+void
+wlmove(Wlwin *wl, uint32_t serial)
+{
+	xdg_toplevel_move(wl->xdg_toplevel, wl->seat, serial);
 }
 
 void

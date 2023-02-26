@@ -51,6 +51,7 @@ struct Wlwin {
 	Rectangle r;
 	int dirty;
 	int alt; /* Kalt state */
+	int maximized;
 
 	/* Wayland State */
 	int runing;
@@ -78,6 +79,10 @@ struct Wlwin {
 
 	struct zxdg_decoration_manager_v1 *decoman;
 	int client_side_deco;
+	Rectangle csd_bar_rect;
+	Rectangle csd_close_rect;
+	Rectangle csd_maximize_rect;
+	Rectangle csd_minimize_rect;
 
 	struct zwp_primary_selection_device_manager_v1 *primsel;
 	struct zwp_primary_selection_device_v1 *primsel_device;
@@ -95,3 +100,7 @@ void wlsetmouse(Wlwin*, Point);
 void wldrawcursor(Wlwin*, Cursorinfo*);
 void wlresize(Wlwin*, int, int);
 void wlflush(Wlwin*);
+void wlclose(Wlwin*);
+void wltogglemaximize(Wlwin*);
+void wlminimize(Wlwin*);
+void wlmove(Wlwin*, uint32_t);
