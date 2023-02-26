@@ -77,6 +77,7 @@ struct Wlwin {
 	struct xkb_context *xkb_context;
 
 	struct zxdg_decoration_manager_v1 *decoman;
+	int client_side_deco;
 
 	struct zwp_primary_selection_device_manager_v1 *primsel;
 	struct zwp_primary_selection_device_v1 *primsel_device;

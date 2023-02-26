@@ -610,6 +610,18 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
 };
 
 static void
+zxdg_toplevel_decoration_v1_handle_configure(void *data, struct zxdg_toplevel_decoration_v1 *deco, uint32_t mode)
+{
+	Wlwin *wl = data;
+	wl->client_side_deco = mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+	printf("%i\n", mode);
+}
+
+static const struct zxdg_toplevel_decoration_v1_listener zxdg_toplevel_decoration_v1_listener = {
+	.configure = zxdg_toplevel_decoration_v1_handle_configure,
+};
+
+static void
 mode(void *data, struct wl_output*, uint, int x, int y, int)
 {
 	Wlwin *wl;
@@ -711,6 +723,7 @@ wlsetcb(Wlwin *wl)
 	wl->xdg_toplevel = xdg_surface_get_toplevel(xdg_surface);
 	if(wl->decoman != nil){
 		deco = zxdg_decoration_manager_v1_get_toplevel_decoration(wl->decoman, wl->xdg_toplevel);
+		zxdg_toplevel_decoration_v1_add_listener(wl->decoman, &zxdg_toplevel_decoration_v1_listener, wl);
 		zxdg_toplevel_decoration_v1_set_mode(deco, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
 	}
 	xdg_surface_add_listener(xdg_surface, &xdg_surface_listener, wl);
