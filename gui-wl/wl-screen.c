@@ -82,6 +82,7 @@ static void
 wlupdatecsdrects(Wlwin *wl)
 {
 	if (!wl->client_side_deco) {
+		memset(&wl->csd_rects, 0, sizeof wl->csd_rects);
 		return;
 	}
 
@@ -144,7 +145,7 @@ wlresize(Wlwin *wl, int x, int y)
 
 	qlock(&drawlock);
 	wlallocbuffer(wl);
-	r = Rect(CSD_BAR_HEIGHT, 0, wl->dx, wl->dy + CSD_BAR_HEIGHT);
+	r = Rect(0, Dy(wl->csd_rects.bar), wl->dx, wl->dy);
 	gscreen = allocmemimage(r, XRGB32);
 	gscreen->clipr = ZR;
 	qunlock(&drawlock);
@@ -185,7 +186,7 @@ wlattach(char *label)
 	wlflush(wl);
 	wlsettitle(wl, label);
 
-	r = Rect(CSD_BAR_HEIGHT, 0, wl->dx, wl->dy + CSD_BAR_HEIGHT);
+	r = Rect(0, Dy(wl->csd_rects.bar), wl->dx, wl->dy);
 	gscreen = allocmemimage(r, XRGB32);
 	gscreen->clipr = r;
 	gscreen->r = r;

@@ -649,7 +649,13 @@ static void
 zxdg_toplevel_decoration_v1_handle_configure(void *data, struct zxdg_toplevel_decoration_v1 *deco, uint32_t mode)
 {
 	Wlwin *wl = data;
-	wl->client_side_deco = mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+	int csd = mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+	if (csd == wl->client_side_deco) {
+		return;
+	}
+
+	wl->client_side_deco = csd;
+	wlresize(wl, wl->dx, wl->dy);
 }
 
 static const struct zxdg_toplevel_decoration_v1_listener zxdg_toplevel_decoration_v1_listener = {
