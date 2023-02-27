@@ -1,3 +1,6 @@
+#define CSD_BAR_HEIGHT 24
+#define CSD_BUTTON_WIDTH 16
+
 typedef struct Wlwin Wlwin;
 typedef struct Clipboard Clipboard;
 typedef struct Csd Csd;
@@ -109,4 +112,4 @@ void wlclose(Wlwin*);
 void wltogglemaximize(Wlwin*);
 void wlminimize(Wlwin*);
 void wlmove(Wlwin*, uint32_t);
-void wlupdatecsdrects(Wlwin*);
+void wlmenu(Wlwin*, uint32_t);

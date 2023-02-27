@@ -373,28 +373,30 @@ enum{
 };
 
 static int
-csd_handle_mouse(Wlwin *wl, uint32_t serial)
+csd_handle_mouse(Wlwin *wl, uint32_t button, uint32_t serial)
 {
+	if (!wl->client_side_deco) {
+		return 0;
+	}
 	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_close)) {
 		wlclose(wl);
 		return 1;
 	}
-
 	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_maximize)) {
 		wltogglemaximize(wl);
 		return 1;
 	}
-
 	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_minimize)) {
 		wlminimize(wl);
 		return 1;
 	}
-
 	if (ptinrect(wl->mouse.xy, wl->csd_rects.bar)) {
-		wlmove(wl, serial);
+		switch (button) {
+		case BTN_LEFT: wlmove(wl, serial); break;
+		case BTN_RIGHT: wlmenu(wl, serial); break;
+		}
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -418,7 +420,7 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial, u
 		wl->mouse.buttons &= ~m;
 
 	wl->mouse.msec = time;
-	if (wl->client_side_deco && !csd_handle_mouse(wl, serial))
+	if (state && !csd_handle_mouse(wl, button, serial))
 		absmousetrack(wl->mouse.xy.x, wl->mouse.xy.y, wl->mouse.buttons, wl->mouse.msec);
 }
 
