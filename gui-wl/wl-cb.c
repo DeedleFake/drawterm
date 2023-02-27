@@ -375,22 +375,22 @@ enum{
 static int
 csd_handle_mouse(Wlwin *wl, uint32_t serial)
 {
-	if (ptinrect(wl->mouse.xy, wl->csd_close_rect)) {
+	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_close)) {
 		wlclose(wl);
 		return 1;
 	}
 
-	if (ptinrect(wl->mouse.xy, wl->csd_maximize_rect)) {
+	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_maximize)) {
 		wltogglemaximize(wl);
 		return 1;
 	}
 
-	if (ptinrect(wl->mouse.xy, wl->csd_minimize_rect)) {
+	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_minimize)) {
 		wlminimize(wl);
 		return 1;
 	}
 
-	if (ptinrect(wl->mouse.xy, wl->csd_bar_rect)) {
+	if (ptinrect(wl->mouse.xy, wl->csd_rects.bar)) {
 		wlmove(wl, serial);
 		return 1;
 	}

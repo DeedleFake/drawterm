@@ -25,6 +25,9 @@
 
 #undef close
 
+#define CSD_BAR_HEIGHT 24
+#define CSD_BUTTON_WIDTH 16
+
 static Wlwin *gwin;
 
 Memimage *gscreen;
@@ -41,7 +44,6 @@ newwlwin(void)
 	wl->dy = 1024;
 	wl->monx = wl->dx;
 	wl->mony = wl->dy;
-	wl->csd_bar_rect = Rect(0, 0, wl->dx, 20);
 	return wl;
 }
 
@@ -74,6 +76,22 @@ wlmove(Wlwin *wl, uint32_t serial)
 }
 
 void
+wlupdatecsdrects(Wlwin *wl)
+{
+	if (!wl->client_side_deco) {
+		return;
+	}
+
+	wl->csd_rects.bar = Rect(0, 0, wl->dx, CSD_BAR_HEIGHT);
+	wl->csd_rects.button_close = Rect(wl->csd_rects.bar.max.x - 4 - CSD_BUTTON_WIDTH, 4,
+			wl->csd_rects.bar.max.x - 4, wl->csd_rects.bar.max.y - 4);
+	wl->csd_rects.button_maximize = Rect(wl->csd_rects.button_close.min.x - 4 - CSD_BUTTON_WIDTH, wl->csd_rects.button_close.min.y,
+			wl->csd_rects.button_close.min.x - 4, wl->csd_rects.button_close.max.y);
+	wl->csd_rects.button_minimize = Rect(wl->csd_rects.button_maximize.min.x - 4 - CSD_BUTTON_WIDTH, wl->csd_rects.button_maximize.min.y,
+			wl->csd_rects.button_maximize.min.x - 4, wl->csd_rects.button_maximize.max.y);
+}
+
+void
 wlflush(Wlwin *wl)
 {
 	Point p;
@@ -98,6 +116,7 @@ wlresize(Wlwin *wl, int x, int y)
 
 	wl->dx = x;
 	wl->dy = y;
+	wlupdatecsdrects(wl);
 
 	qlock(&drawlock);
 	wlallocbuffer(wl);
@@ -138,6 +157,7 @@ wlattach(char *label)
 
 	memimageinit();
 	wlsetcb(wl);
+	wlupdatecsdrects(wl);
 	wlflush(wl);
 	wlsettitle(wl, label);
 
