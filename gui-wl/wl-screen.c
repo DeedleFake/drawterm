@@ -25,6 +25,9 @@
 
 #undef close
 
+#define CSD_BAR_HEIGHT 24
+#define CSD_BUTTON_WIDTH 16
+
 static Wlwin *gwin;
 
 Memimage *gscreen;
@@ -107,7 +110,9 @@ wlfillrect(Wlwin *wl, Rectangle rect, uint32_t color)
 static void
 wldrawcsd(Wlwin *wl)
 {
-	wlfillrect(wl, wl->csd_rects.bar, DWhite >> 8);
+	if (!wl->client_side_deco)
+		return;
+	wlfillrect(wl, wl->csd_rects.bar, 0xAAAAAA);
 	wlfillrect(wl, wl->csd_rects.button_close, DRed >> 8);
 	wlfillrect(wl, wl->csd_rects.button_maximize, DGreen >> 8);
 	wlfillrect(wl, wl->csd_rects.button_minimize, DYellow >> 8);
@@ -120,9 +125,6 @@ wlflush(Wlwin *wl)
 
 	wl_surface_attach(wl->surface, wl->screenbuffer, 0, 0);
 	if(wl->dirty){
-		if (wl->client_side_deco) {
-			wldrawcsd(wl);
-		}
 		p.x = wl->r.min.x;
 		for(p.y = wl->r.min.y; p.y < wl->r.max.y; p.y++)
 			memcpy(wl->shm_data+(p.y*wl->dx+p.x)*4, byteaddr(gscreen, p), Dx(wl->r)*4);
@@ -145,7 +147,7 @@ wlresize(Wlwin *wl, int x, int y)
 
 	qlock(&drawlock);
 	wlallocbuffer(wl);
-	r = Rect(0, Dy(wl->csd_rects.bar), wl->dx, wl->dy);
+	r = Rect(0, wl->csd_rects.bar.max.y, wl->dx, wl->dy);
 	gscreen = allocmemimage(r, XRGB32);
 	gscreen->clipr = ZR;
 	qunlock(&drawlock);
@@ -156,6 +158,7 @@ wlresize(Wlwin *wl, int x, int y)
 	wl->dirty = 1;
 	wl->r = r;
 	wlflush(wl);
+	wldrawcsd(wl);
 	qunlock(&drawlock);
 }
 
@@ -186,7 +189,7 @@ wlattach(char *label)
 	wlflush(wl);
 	wlsettitle(wl, label);
 
-	r = Rect(0, Dy(wl->csd_rects.bar), wl->dx, wl->dy);
+	r = Rect(0, wl->csd_rects.bar.max.y, wl->dx, wl->dy);
 	gscreen = allocmemimage(r, XRGB32);
 	gscreen->clipr = r;
 	gscreen->r = r;
@@ -197,6 +200,7 @@ wlattach(char *label)
 	terminit();
 	qlock(&drawlock);
 	wlflush(wl);
+	wldrawcsd(wl);
 	qunlock(&drawlock);
 	return wl;
 }

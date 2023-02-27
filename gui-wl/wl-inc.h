@@ -1,6 +1,3 @@
-#define CSD_BAR_HEIGHT 24
-#define CSD_BUTTON_WIDTH 16
-
 typedef struct Wlwin Wlwin;
 typedef struct Clipboard Clipboard;
 typedef struct Csd Csd;
