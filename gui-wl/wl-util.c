@@ -93,7 +93,7 @@ wlallocbuffer(Wlwin *wl)
 	if(wl->cursorbuffer != nil)
 		wl_buffer_destroy(wl->cursorbuffer);
 
-	wl->screenbuffer = wl_shm_pool_create_buffer(wl->pool, 0, wl->dx, wl->dy + Dy(wl->csd_rects.bar), wl->dx*4, WL_SHM_FORMAT_XRGB8888);
+	wl->screenbuffer = wl_shm_pool_create_buffer(wl->pool, 0, wl->dx, wl->dy + CSD_BAR_HEIGHT, wl->dx*4, WL_SHM_FORMAT_XRGB8888);
 	wl->cursorbuffer = wl_shm_pool_create_buffer(wl->pool, size, 16, 16, 16*4, WL_SHM_FORMAT_ARGB8888);
 }
 
@@ -112,7 +112,7 @@ wldrawcursor(Wlwin *wl, Cursorinfo *c)
 	u32int *buf;
 	uint16_t clr[16], set[16];
 
-	buf = wl->shm_data+(wl->dx*(wl->dy+Dy(wl->csd_rects.bar))*4);
+	buf = wl->shm_data+(wl->dx*(wl->dy+CSD_BAR_HEIGHT)*4);
 	for(i=0,j=0; i < 16; i++,j+=2){
 		clr[i] = c->clr[j]<<8 | c->clr[j+1];
 		set[i] = c->set[j]<<8 | c->set[j+1];
