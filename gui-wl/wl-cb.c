@@ -375,29 +375,21 @@ enum{
 static int
 csd_handle_mouse(Wlwin *wl, uint32_t button, uint32_t serial)
 {
-	if (!wl->client_side_deco) {
+	if (!wl->csd_width || ptinrect(wl->mouse.xy, wl->r)) {
 		return 0;
 	}
-	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_close)) {
-		wlclose(wl);
-		return 1;
+	switch (button) {
+	case BTN_LEFT:
+		wl->csd_active = 1;
+		wlpointerresize(wl, serial, XDG_TOPLEVEL_RESIZE_EDGE_RIGHT);
+		break;
+	case BTN_MIDDLE:
+	case BTN_RIGHT:
+		wl->csd_active = 1;
+		wlpointermove(wl, serial);
+		break;
 	}
-	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_maximize)) {
-		wltogglemaximize(wl);
-		return 1;
-	}
-	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_minimize)) {
-		wlminimize(wl);
-		return 1;
-	}
-	if (ptinrect(wl->mouse.xy, wl->csd_rects.bar)) {
-		switch (button) {
-		case BTN_LEFT: wlmove(wl, serial); break;
-		case BTN_RIGHT: wlmenu(wl, serial); break;
-		}
-		return 1;
-	}
-	return 0;
+	return 1;
 }
 
 static void
@@ -420,6 +412,7 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial, u
 		wl->mouse.buttons &= ~m;
 
 	wl->mouse.msec = time;
+	wl->csd_active = 0;
 	if (state && !csd_handle_mouse(wl, button, serial))
 		absmousetrack(wl->mouse.xy.x, wl->mouse.xy.y, wl->mouse.buttons, wl->mouse.msec);
 }
@@ -650,11 +643,11 @@ zxdg_toplevel_decoration_v1_handle_configure(void *data, struct zxdg_toplevel_de
 {
 	Wlwin *wl = data;
 	int csd = mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
-	if (csd == wl->client_side_deco) {
+	if (csd == !!wl->csd_width) {
 		return;
 	}
 
-	wl->client_side_deco = csd;
+	wl->csd_width = csd ? 5 : 0;
 	wlresize(wl, wl->dx, wl->dy);
 }
 
@@ -765,7 +758,7 @@ wlsetcb(Wlwin *wl)
 	xdg_surface_add_listener(xdg_surface, &xdg_surface_listener, wl);
 	xdg_toplevel_add_listener(wl->xdg_toplevel, &xdg_toplevel_listener, wl);
 
-	wl->client_side_deco = wl->decoman == nil;
+	wl->csd_width = wl->decoman == nil ? 5 : 0;
 	if(wl->decoman != nil){
 		deco = zxdg_decoration_manager_v1_get_toplevel_decoration(wl->decoman, wl->xdg_toplevel);
 		zxdg_toplevel_decoration_v1_add_listener(wl->decoman, &zxdg_toplevel_decoration_v1_listener, wl);
