@@ -57,6 +57,8 @@ static void
 xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states)
 {
 	Wlwin *wl;
+	enum xdg_toplevel_state state;
+	int i;
 
 	wl = data;
 	if(width == 0 || height == 0 || (width == wl->dx && height == wl->dy))
@@ -64,14 +66,15 @@ xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *xdg_toplevel, int
 	wlresize(wl, width, height);
 
 	wl->maximized = 0;
-	enum xdg_toplevel_state *state;
-	wl_array_for_each(state, states) {
-		switch (*state) {
+	for (i = 0; i < states->size; i++) {
+		state = ((enum xdg_toplevel_state *)states->data)[i];
+		switch (state) {
 		case XDG_TOPLEVEL_STATE_MAXIMIZED:
 			wl->maximized = 1;
-			break;
+			goto after;
 		}
 	}
+after:
 }
 
 const struct xdg_toplevel_listener xdg_toplevel_listener = {
