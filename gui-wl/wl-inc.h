@@ -42,6 +42,11 @@ enum{
 	Aenter2,
 };
 
+enum CsdSizes {
+	csd_bar_height = 24,
+	csd_button_width = 16,
+};
+
 struct Csd {
 	Rectangle bar;
 	Rectangle button_close;
