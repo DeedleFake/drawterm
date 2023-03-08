@@ -81,18 +81,23 @@ wlmenu(Wlwin *wl, uint32_t serial)
 static void
 wlupdatecsdrects(Wlwin *wl)
 {
+	Point offset;
+	Rectangle button;
+
 	if (!wl->client_side_deco) {
 		memset(&wl->csd_rects, 0, sizeof wl->csd_rects);
 		return;
 	}
 
 	wl->csd_rects.bar = Rect(0, 0, wl->dx, csd_bar_height);
-	wl->csd_rects.button_close = Rect(wl->csd_rects.bar.max.x - 4 - csd_button_width, 4,
-			wl->csd_rects.bar.max.x - 4, wl->csd_rects.bar.max.y - 4);
-	wl->csd_rects.button_maximize = Rect(wl->csd_rects.button_close.min.x - 4 - csd_button_width, wl->csd_rects.button_close.min.y,
-			wl->csd_rects.button_close.min.x - 4, wl->csd_rects.button_close.max.y);
-	wl->csd_rects.button_minimize = Rect(wl->csd_rects.button_maximize.min.x - 4 - csd_button_width, wl->csd_rects.button_maximize.min.y,
-			wl->csd_rects.button_maximize.min.x - 4, wl->csd_rects.button_maximize.max.y);
+
+	offset = Pt(csd_button_width + 4, 0);
+	button = Rect(0, 4, csd_button_width, csd_button_width + 4);
+	button = rectsubpt(button, offset);
+
+	wl->csd_rects.button_close = button = rectaddpt(button, Pt(wl->dx, 0));
+	wl->csd_rects.button_maximize = button = rectsubpt(button, offset);
+	wl->csd_rects.button_minimize = rectsubpt(button, offset);
 }
 
 static void
