@@ -104,9 +104,11 @@ static void
 wlfillrect(Wlwin *wl, Rectangle rect, uint32_t color)
 {
 	Point p;
+	uint32_t *data = wl->shm_data;
+
 	for (p.y = rect.min.y; p.y < rect.max.y; p.y++)
 		for (p.x = rect.min.x; p.x < rect.max.x; p.x++)
-			memcpy(wl->shm_data+(p.y*wl->dx+p.x)*4, &color, 4);
+			data[p.y * wl->dx + p.x] = color;
 }
 
 static void
