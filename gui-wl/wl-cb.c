@@ -66,15 +66,14 @@ xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *xdg_toplevel, int
 	wlresize(wl, width, height);
 
 	wl->maximized = 0;
-	for (i = 0; i < states->size; i++) {
+	for(i = 0; i < states->size; i++) {
 		state = ((enum xdg_toplevel_state *)states->data)[i];
 		switch (state) {
 		case XDG_TOPLEVEL_STATE_MAXIMIZED:
 			wl->maximized = 1;
-			goto after;
+			return;
 		}
 	}
-after:
 }
 
 const struct xdg_toplevel_listener xdg_toplevel_listener = {
@@ -378,22 +377,22 @@ enum{
 static int
 csd_handle_mouse(Wlwin *wl, uint32_t button, uint32_t serial)
 {
-	if (!wl->client_side_deco) {
+	if(!wl->client_side_deco) {
 		return 0;
 	}
-	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_close)) {
+	if(ptinrect(wl->mouse.xy, wl->csd_rects.button_close)) {
 		wlclose(wl);
 		return 1;
 	}
-	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_maximize)) {
+	if(ptinrect(wl->mouse.xy, wl->csd_rects.button_maximize)) {
 		wltogglemaximize(wl);
 		return 1;
 	}
-	if (ptinrect(wl->mouse.xy, wl->csd_rects.button_minimize)) {
+	if(ptinrect(wl->mouse.xy, wl->csd_rects.button_minimize)) {
 		wlminimize(wl);
 		return 1;
 	}
-	if (ptinrect(wl->mouse.xy, wl->csd_rects.bar)) {
+	if(ptinrect(wl->mouse.xy, wl->csd_rects.bar)) {
 		switch (button) {
 		case BTN_LEFT: wlmove(wl, serial); break;
 		case BTN_RIGHT: wlmenu(wl, serial); break;
@@ -423,7 +422,7 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial, u
 		wl->mouse.buttons &= ~m;
 
 	wl->mouse.msec = time;
-	if (state && !csd_handle_mouse(wl, button, serial))
+	if(state && !csd_handle_mouse(wl, button, serial))
 		absmousetrack(wl->mouse.xy.x, wl->mouse.xy.y, wl->mouse.buttons, wl->mouse.msec);
 }
 
@@ -653,7 +652,7 @@ zxdg_toplevel_decoration_v1_handle_configure(void *data, struct zxdg_toplevel_de
 {
 	Wlwin *wl = data;
 	int csd = mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
-	if (csd == wl->client_side_deco) {
+	if(csd == wl->client_side_deco) {
 		return;
 	}
 
@@ -835,7 +834,7 @@ void
 wlsetmouse(Wlwin *wl, Point p)
 {
 	Point delta;
-	if (wl->vpointer == nil)
+	if(wl->vpointer == nil)
 		return;
 
 	delta.x = p.x - wl->mouse.xy.x;

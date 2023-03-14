@@ -54,7 +54,7 @@ wlclose(Wlwin *wl)
 void
 wltogglemaximize(Wlwin *wl)
 {
-	if (wl->maximized)
+	if(wl->maximized)
 		xdg_toplevel_unset_maximized(wl->xdg_toplevel);
 	else
 		xdg_toplevel_set_maximized(wl->xdg_toplevel);
@@ -84,7 +84,7 @@ wlupdatecsdrects(Wlwin *wl)
 	Point offset;
 	Rectangle button;
 
-	if (!wl->client_side_deco) {
+	if(!wl->client_side_deco) {
 		memset(&wl->csd_rects, 0, sizeof wl->csd_rects);
 		return;
 	}
@@ -106,15 +106,15 @@ wlfillrect(Wlwin *wl, Rectangle rect, uint32_t color)
 	Point p;
 	uint32_t *data = wl->shm_data;
 
-	for (p.y = rect.min.y; p.y < rect.max.y; p.y++)
-		for (p.x = rect.min.x; p.x < rect.max.x; p.x++)
+	for(p.y = rect.min.y; p.y < rect.max.y; p.y++)
+		for(p.x = rect.min.x; p.x < rect.max.x; p.x++)
 			data[p.y * wl->dx + p.x] = color;
 }
 
 static void
 wldrawcsd(Wlwin *wl)
 {
-	if (!wl->client_side_deco)
+	if(!wl->client_side_deco)
 		return;
 	wlfillrect(wl, wl->csd_rects.bar, 0xAAAAAA);
 	wlfillrect(wl, wl->csd_rects.button_close, DRed >> 8);
